@@ -14,8 +14,15 @@ defmodule Sesopenko.PNG.LowLevel do
   @doc """
   Creates binary chunk for given type & data
   """
-  def chunk(:ihdr, data) do
-    prefix = <<byte_size(data)::size(@chunk_length_bit_width)>> <> <<"IHDR">>
+  def chunk(type, data) do
+    type_bytes =
+      cond do
+        type == :ihdr -> <<"IHDR">>
+        type == :idat -> <<"IDAT">>
+        type == :iend -> <<"IEND">>
+      end
+
+    prefix = <<byte_size(data)::size(@chunk_length_bit_width)>> <> type_bytes
     package = prefix <> data
     crc_integer = :erlang.crc32(package)
     package <> <<crc_integer::size(@crc_bit_width)>>

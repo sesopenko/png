@@ -12,17 +12,38 @@ defmodule Sesopenko.PNG.LowLevelTest do
   end
 
   describe "chunk" do
+    # some of the byte values for these scenarios are thanks to
+    # [Extracing PNG Chunks with Go](https://parsiya.net/blog/2018-02-25-extracting-png-chunks-with-go/)
     scenarios = [
       %{
         label: "ihdr chunk",
         input_chunk_type: :ihdr,
         input_data: Hexate.decode("0000006F000000730802000000"),
-        expected_chunk_length: 13,
         expected_byte_length: 13,
         # Ascii string "IHDR":
         expected_cunk_type: <<73, 72, 68, 82>>,
         expected_crc: Hexate.decode("19b3cbd7"),
         crc_start: @length_byte_length + @type_byte_length + 13
+      },
+      %{
+        label: "idat chunk",
+        input_chunk_type: :idat,
+        input_data: Hexate.decode("0000006F000000730802000000"),
+        expected_byte_length: 13,
+        # Ascii string "IDAT":
+        expected_cunk_type: <<73, 68, 65, 84>>,
+        expected_crc: Hexate.decode("19b3cbd7"),
+        crc_start: @length_byte_length + @type_byte_length + 13
+      },
+      %{
+        label: "iend chunk",
+        input_chunk_type: :iend,
+        input_data: <<>>,
+        expected_byte_length: 0,
+        # Ascii string "IEND":
+        expected_cunk_type: <<73, 69, 78, 68>>,
+        expected_crc: Hexate.decode("ae426082"),
+        crc_start: @length_byte_length + @type_byte_length
       }
     ]
 
@@ -30,7 +51,6 @@ defmodule Sesopenko.PNG.LowLevelTest do
       @tag expected_byte_length: scenario[:expected_byte_length]
       @tag input_chunk_type: scenario[:input_chunk_type]
       @tag input_data: scenario[:input_data]
-      @tag expected_chunk_length: scenario[:expected_chunk_length]
       @tag expected_cunk_type: scenario[:expected_cunk_type]
       @tag crc_start: scenario[:crc_start]
       test scenario[:label], context do
