@@ -5,9 +5,11 @@ defmodule Sesopenko.PNG.Config do
   Compiles data for IHDR chunk.
   """
 
-  @compression_method_none 0
+  # inflate deflate with a sliding window of at mose 32768 bytes
+  # [PNG Chunks](http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html)
+  @compression_method_inflate_deflate 0
   @filter_method_none 0
-  @interlaced_method_disabled 0
+  @interlace_method_disabled 0
   defstruct [
     :width,
     :height,
@@ -15,7 +17,7 @@ defmodule Sesopenko.PNG.Config do
     :color_type,
     :compression_method,
     :filter_method,
-    :interlaced_method
+    :interlace_method
   ]
 
   def get(width, height) do
@@ -24,9 +26,9 @@ defmodule Sesopenko.PNG.Config do
       height: height,
       bit_depth: 8,
       color_type: :grayscale,
-      compression_method: @compression_method_none,
+      compression_method: @compression_method_inflate_deflate,
       filter_method: @filter_method_none,
-      interlaced_method: @interlaced_method_disabled
+      interlace_method: @interlace_method_disabled
     }
   end
 end

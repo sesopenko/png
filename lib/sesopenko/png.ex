@@ -2,11 +2,6 @@ defmodule Sesopenko.PNG do
   @moduledoc """
   Documentation for Sesopenko.PNG.
   """
-  defmodule LowLevel do
-    def header() do
-      <<137, 80, 78, 71, 13, 10, 26, 10>>
-    end
-  end
 
   @doc """
   Produces a reference single red pixel image.

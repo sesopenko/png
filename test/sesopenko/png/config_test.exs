@@ -14,7 +14,7 @@ defmodule Sesopenko.PNG.ConfigTest do
       color_type: :grayscale,
       compression_method: 0,
       filter_method: 0,
-      interlaced_method: 0
+      interlace_method: 0
     }
 
     # Act.
