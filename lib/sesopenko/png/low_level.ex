@@ -2,13 +2,29 @@ defmodule Sesopenko.PNG.LowLevel do
   alias Sesopenko.PNG.Config
   @dimension_bit_width 32
   @small_property_bit_width 8
+  @crc_bit_width 32
   @color_type_grayscale 0
+  @chunk_length_bit_width 32
   @compression_method_inflate_deflate 0
+
   def header() do
     <<137, 80, 78, 71, 13, 10, 26, 10>>
   end
 
-  def ihdr(%Config{} = config) do
+  @doc """
+  Creates binary chunk for given type & data
+  """
+  def chunk(:ihdr, data) do
+    prefix = <<byte_size(data)::size(@chunk_length_bit_width)>> <> <<"IHDR">>
+    package = prefix <> data
+    crc_integer = :erlang.crc32(package)
+    package <> <<crc_integer::size(@crc_bit_width)>>
+  end
+
+  @doc """
+  Produces a binary IHDR header from a given config.
+  """
+  def ihdr_content(%Config{} = config) do
     color_type =
       cond do
         config.color_type == :grayscale -> @color_type_grayscale

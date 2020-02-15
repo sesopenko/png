@@ -1,6 +1,9 @@
 defmodule Sesopenko.PNG.LowLevelTest do
   alias Sesopenko.PNG.LowLevel
   use ExUnit.Case
+  @length_byte_length 4
+  @type_byte_length 4
+  @crc_byte_length 4
 
   test "Should have a header" do
     header = LowLevel.header()
@@ -8,8 +11,55 @@ defmodule Sesopenko.PNG.LowLevelTest do
     assert header == <<137, 80, 78, 71, 13, 10, 26, 10>>
   end
 
-  describe "chunks" do
-    test "ihdr" do
+  describe "chunk" do
+    scenarios = [
+      %{
+        label: "ihdr chunk",
+        input_chunk_type: :ihdr,
+        input_data: Hexate.decode("0000006F000000730802000000"),
+        expected_chunk_length: 13,
+        expected_byte_length: 13,
+        # Ascii string "IHDR":
+        expected_cunk_type: <<73, 72, 68, 82>>,
+        expected_crc: Hexate.decode("19b3cbd7"),
+        crc_start: @length_byte_length + @type_byte_length + 13
+      }
+    ]
+
+    for scenario <- scenarios do
+      @tag expected_byte_length: scenario[:expected_byte_length]
+      @tag input_chunk_type: scenario[:input_chunk_type]
+      @tag input_data: scenario[:input_data]
+      @tag expected_chunk_length: scenario[:expected_chunk_length]
+      @tag expected_cunk_type: scenario[:expected_cunk_type]
+      @tag crc_start: scenario[:crc_start]
+      test scenario[:label], context do
+        # Arranged in context via scenario data.
+        # Act.
+        result = LowLevel.chunk(context[:input_chunk_type], context[:input_data])
+        # Assert.
+        # should have length bytes at the beginning
+        assert byte_size(result) >= @length_byte_length
+        # get the length value
+        length_portion = :binary.part(result, {0, @length_byte_length})
+        length_result = :binary.decode_unsigned(length_portion)
+        assert length_result == context[:expected_byte_length]
+
+        # should get the expected chunk type
+        assert byte_size(result) >= 8
+        chunk_type_portion = :binary.part(result, {@length_byte_length, @type_byte_length})
+
+        assert chunk_type_portion == context[:expected_cunk_type]
+
+        # should have crc in bytes
+        assert byte_size(result) >= context[:crc_start] + @crc_byte_length
+        checksum_portion = :binary.part(result, {context[:crc_start], @crc_byte_length})
+      end
+    end
+  end
+
+  describe "ihdr_data" do
+    test "ihdr_data" do
       # Arrange.
       input_width = 128
       input_height = 256
@@ -23,11 +73,10 @@ defmodule Sesopenko.PNG.LowLevelTest do
       input_config = Sesopenko.PNG.Config.get(input_width, input_height)
 
       # Act.
-      ihdr_bytes = LowLevel.ihdr(input_config)
+      ihdr_bytes = LowLevel.ihdr_content(input_config)
 
       # Assert.
 
-      # must be the first chunk
       assert byte_size(ihdr_bytes) > 3
       # it contains (in this order)
       # width (4 bytes)
