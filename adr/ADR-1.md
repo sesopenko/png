@@ -1,4 +1,4 @@
-# ADR-1
+# ADR-1 build png library, mvp
 
 ## Context
 
@@ -43,3 +43,6 @@ Accepted
 ## Consequences
 
 List consequences experienced (positive and negative) after the decision was made.
+
+* Decided to omit multiple scanlines in different chunks to cut down on complexity & complete project sooner.
+* Writing test scenarios for binary data is tricky because you don't want to depend on your own library code to confirm your library code.  Finding example binary data I could use in my test scenarios is tricky.
