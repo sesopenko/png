@@ -1,0 +1,3 @@
+%{
+  "hexate": {:hex, :hexate, "0.6.1", "1cea42e462c1daa32223127d4752e71016c3d933d492b9bb7fa4709a4a0fd50d", [:mix], [], "hexpm", "667c429c0970e3097107c9fafcc645636302888388845d78a3947a739fd946b7"},
+}
