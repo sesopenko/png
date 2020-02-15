@@ -48,6 +48,19 @@ defmodule Sesopenko.PNG.LowLevel do
     >>
   end
 
+  def idat_content(%Config{} = config, scanlines) when is_list(scanlines) do
+    bytes = scanlines_to_binary(config, scanlines)
+    z_stream = :zlib.open()
+    :zlib.deflateInit(z_stream)
+    # the stream isn't flushed with the same arity as the input data
+    binary =
+      :zlib.deflate(z_stream, scanlines, :finish)
+      |> :erlang.iolist_to_binary()
+
+    :ok = :zlib.close(z_stream)
+    binary
+  end
+
   @doc """
 
   Example input scanlines:
