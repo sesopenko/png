@@ -47,4 +47,32 @@ defmodule Sesopenko.PNG.LowLevel do
       config.interlace_method::size(@small_property_bit_width)
     >>
   end
+
+  @doc """
+
+  Example input scanlines:
+  ```elixir
+  image_with_white_corners = [
+    [254, 0, 254],
+    [0, 0, 0],
+    [254, 0, 254]
+  ]
+  ```
+  """
+  def scanlines_to_binary(%Config{} = config, scanlines) when is_list(scanlines) do
+    # flatten the scanlines into a single binary string
+    # scanlines are in the following form
+    binary_string =
+      scanlines
+      |> Stream.concat()
+      |> Stream.map(fn integer_value ->
+        byte_size =
+          cond do
+            config.bit_depth == 8 -> 8
+          end
+
+        <<integer_value::size(byte_size)>>
+      end)
+      |> Enum.reduce(<<>>, fn value, accumulator -> accumulator <> value end)
+  end
 end

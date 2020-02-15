@@ -135,4 +135,70 @@ defmodule Sesopenko.PNG.LowLevelTest do
     result = :binary.decode_unsigned(portion_bytes)
     assert result == expected_value
   end
+
+  describe "scanlines_to_binary" do
+    scenarios = [
+      %{
+        label: "single white pixel",
+        input_scanlines: [
+          [254]
+        ],
+        input_config: Sesopenko.PNG.Config.get(1, 1),
+        expected_binary: <<254::size(8)>>
+      },
+      %{
+        label: "single black pixel",
+        input_scanlines: [
+          [0]
+        ],
+        input_config: Sesopenko.PNG.Config.get(1, 1),
+        expected_binary: <<0::size(8)>>
+      },
+      %{
+        label: "two black pixels, horizontal",
+        input_scanlines: [
+          [0, 0]
+        ],
+        input_config: Sesopenko.PNG.Config.get(2, 1),
+        expected_binary: <<0::size(8), 0::size(8)>>
+      },
+      %{
+        label: "four white corners",
+        input_scanlines: [
+          [254, 0, 254],
+          [0, 0, 0],
+          [254, 0, 254]
+        ],
+        input_config: Sesopenko.PNG.Config.get(2, 1),
+        expected_binary: <<
+          254::size(8),
+          0::size(8),
+          254::size(8),
+          0::size(8),
+          0::size(8),
+          0::size(8),
+          254::size(8),
+          0::size(8),
+          254::size(8)
+        >>
+      }
+    ]
+
+    for scenario <- scenarios do
+      @tag input_scanlines: scenario[:input_scanlines]
+      @tag expected_binary: scenario[:expected_binary]
+      @tag input_config: scenario[:input_config]
+      test scenario[:label], context do
+        # Arrange.
+        input_scanlines = context[:input_scanlines]
+        input_config = context[:input_config]
+        expected_binary = context[:expected_binary]
+
+        # Act.
+        binary_result = LowLevel.scanlines_to_binary(input_config, input_scanlines)
+        # Assert.
+        assert binary_result == expected_binary
+      end
+    end
+  end
 end
