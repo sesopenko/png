@@ -4,7 +4,7 @@ defmodule Sesopenko.PNG.MixProject do
   def project do
     [
       app: :sesopenko_png,
-      version: "1.0.0",
+      version: "1.0.1",
       description: description(),
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
@@ -20,7 +20,7 @@ defmodule Sesopenko.PNG.MixProject do
   defp package() do
     [
       name: "Sesopenko.PNG",
-      files: ~w(lib priv .formatter.exs mix.exs README* readme* LICENSE*
+      files: ~w(lib .formatter.exs mix.exs README* LICENSE*
       license* CHANGELOG* changelog* src),
       licenses: ["GNU-GPLv3"],
       links: %{"GitHub" => "https://github.com/sesopenko/png"},

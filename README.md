@@ -25,7 +25,7 @@ by adding `sesopenko` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:sesopenko_png, "~> 1.0.0"}
+    {:sesopenko_png, "~> 1.0.1"}
   ]
 end
 ```
@@ -40,3 +40,7 @@ end
 * [PNG Specifications](http://www.libpng.org/pub/png/spec/1.2/PNG-Contents.html), libpng.org
 * [Portable Network Graphics](https://en.wikipedia.org/wiki/Portable_Network_Graphics#%22Chunks%22_within_the_file), Wikipedia
 * [ACII Table and Description](http://www.asciitable.com/), Asciitable.com
+
+## License
+
+This is licensed GNU GPL v3 and is described in LICENSE.txt. 
