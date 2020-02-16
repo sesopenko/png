@@ -8,7 +8,7 @@ defmodule Sesopenko.PNG.MixProject do
       description: description(),
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
       package: package()
     ]
   end
