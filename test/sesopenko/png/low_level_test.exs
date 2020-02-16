@@ -22,18 +22,18 @@ defmodule Sesopenko.PNG.LowLevelTest do
         expected_byte_length: 13,
         # Ascii string "IHDR":
         expected_cunk_type: <<73, 72, 68, 82>>,
-        expected_crc: Hexate.decode("19b3cbd7"),
+        expected_crc: :binary.decode_unsigned(Hexate.decode("19B3CBD7")),
         crc_start: @length_byte_length + @type_byte_length + 13
       },
       %{
         label: "idat chunk",
         input_chunk_type: :idat,
-        input_data: Hexate.decode("0000006F000000730802000000"),
-        expected_byte_length: 13,
+        input_data: Hexate.decode("08D763F80F0001010100"),
+        expected_byte_length: 10,
         # Ascii string "IDAT":
         expected_cunk_type: <<73, 68, 65, 84>>,
-        expected_crc: Hexate.decode("19b3cbd7"),
-        crc_start: @length_byte_length + @type_byte_length + 13
+        expected_crc: :binary.decode_unsigned(Hexate.decode("1BB6EE56")),
+        crc_start: @length_byte_length + @type_byte_length + 10
       },
       %{
         label: "iend chunk",
@@ -42,7 +42,7 @@ defmodule Sesopenko.PNG.LowLevelTest do
         expected_byte_length: 0,
         # Ascii string "IEND":
         expected_cunk_type: <<73, 69, 78, 68>>,
-        expected_crc: Hexate.decode("ae426082"),
+        expected_crc: :binary.decode_unsigned(Hexate.decode("ae426082")),
         crc_start: @length_byte_length + @type_byte_length
       }
     ]
@@ -53,6 +53,7 @@ defmodule Sesopenko.PNG.LowLevelTest do
       @tag input_data: scenario[:input_data]
       @tag expected_cunk_type: scenario[:expected_cunk_type]
       @tag crc_start: scenario[:crc_start]
+      @tag expected_crc: scenario[:expected_crc]
       test scenario[:label], context do
         # Arranged in context via scenario data.
         # Act.
@@ -73,7 +74,12 @@ defmodule Sesopenko.PNG.LowLevelTest do
 
         # should have crc in bytes
         assert byte_size(result) >= context[:crc_start] + @crc_byte_length
-        checksum_portion = :binary.part(result, {context[:crc_start], @crc_byte_length})
+
+        checksum =
+          :binary.part(result, {context[:crc_start], @crc_byte_length})
+          |> :binary.decode_unsigned()
+
+        assert checksum == context[:expected_crc]
       end
     end
   end
@@ -86,7 +92,6 @@ defmodule Sesopenko.PNG.LowLevelTest do
       expected_bit_depth = 8
       expected_compression_method = 0
       # color type grayscale == 0
-      expected_color_type = 0
       expected_filter_method = 0
       expected_interlace_method = 0
 
@@ -126,9 +131,6 @@ defmodule Sesopenko.PNG.LowLevelTest do
     end
   end
 
-  @doc """
-  Assert the given value for bytes in the given position of a given byte string.
-  """
   defp assert_byte_value(bytes, start_pos, length, expected_value) do
     portion_bytes = :binary.part(bytes, {start_pos, length})
     assert byte_size(portion_bytes) == length
@@ -206,9 +208,6 @@ defmodule Sesopenko.PNG.LowLevelTest do
     test "single pixel white" do
       # See single_white.png for example PNG guiding this test
       # Arrange.
-      expected_binary = Hexate.decode("08d763f80f0001010100")
-      expected_checksum = Hexate.decode("1bb6ee56")
-      expected_byte_size = 10
       input_scanlines = [[255]]
       input_config = Sesopenko.PNG.Config.get(1, 1)
 
@@ -239,7 +238,7 @@ defmodule Sesopenko.PNG.LowLevelTest do
       input_image = Sesopenko.PNG.reference_image()
       # Act.
       [ihdr, idata, iend] = LowLevel.explode_chunks(input_image)
-      {ihdr_length, ihdr_type, ihdr_data, ihdr_crc} = ihdr
+      {ihdr_length, ihdr_type, ihdr_data, _ihdr_crc} = ihdr
       # Assert
 
       assert ihdr_length == 13
@@ -263,11 +262,11 @@ defmodule Sesopenko.PNG.LowLevelTest do
       assert filter_method == 0
       assert interlace_method == 0
 
-      {idat_length, idat_type, idat_data, idat_crc} = idata
+      {idat_length, idat_type, _idat_data, _idat_crc} = idata
 
       assert idat_length == 14
       assert idat_type == <<"IDAT">>
-      {iend_length, iend_type, iend_dat, iend_crc} = iend
+      {iend_length, iend_type, iend_dat, _iend_crc} = iend
       assert iend_length == 0
       assert iend_type == <<"IEND">>
       assert iend_dat == <<>>

@@ -30,10 +30,10 @@ defmodule Sesopenko.PNG.LowLevel do
         type == :iend -> <<"IEND">>
       end
 
-    prefix = <<byte_size(data)::size(@chunk_length_bit_width)>> <> type_bytes
-    package = prefix <> data
-    crc_integer = :erlang.crc32(package)
-    package <> <<crc_integer::size(@crc_bit_width)>>
+    length_prefix = <<byte_size(data)::size(@chunk_length_bit_width)>>
+    crc_integer = :erlang.crc32(type_bytes <> data)
+    crc_bitstring = <<crc_integer::size(@crc_bit_width)>>
+    length_prefix <> type_bytes <> data <> crc_bitstring
   end
 
   @doc """
@@ -58,7 +58,6 @@ defmodule Sesopenko.PNG.LowLevel do
 
   def idat_content(%Config{} = config, scanlines) when is_list(scanlines) do
     # learn about flushing here: http://www.bolet.org/~pornin/deflate-flush.html
-    bytes = scanlines_to_binary(config, scanlines)
     z_stream = :zlib.open()
     :zlib.deflateInit(z_stream, @deflate_compression_level)
     # the stream isn't flushed with the same arity as the input data
