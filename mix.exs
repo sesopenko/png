@@ -3,11 +3,28 @@ defmodule Sesopenko.PNG.MixProject do
 
   def project do
     [
-      app: :sesopenko,
-      version: "0.1.0",
+      app: :sesopenko_png,
+      version: "1.0.0",
+      description: description(),
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       deps: deps()
+      package: package()
+    ]
+  end
+
+  defp description() do
+    "A PNG bitstring generator. Takes an two-dimensional List set of greyscale byte vales and generates a bitstring."
+  end
+
+  defp package() do
+    [
+      name: "Sesopenko.PNG",
+      files: ~w(lib priv .formatter.exs mix.exs README* readme* LICENSE*
+      license* CHANGELOG* changelog* src),
+      licenses: ["GNU-GPLv3"],
+      links: %{"GitHub" => "https://github.com/sesopenko/png"},
+      source_url: "https://github.com/sesopenko/png/blob/master/"
     ]
   end
 
