@@ -3,8 +3,6 @@ defmodule Sesopenko.PNGTest do
   use ExUnit.Case
   doctest Sesopenko.PNG
 
-  @header_byte_size 8
-
   describe "create" do
     test "single white pixel greyscale 8 bit image" do
       # Arrange.
@@ -28,7 +26,7 @@ defmodule Sesopenko.PNGTest do
           filter_method,
           interlace_method
         >>,
-        crc
+        _crc
       } = ihdr
 
       assert width == 1
@@ -40,10 +38,10 @@ defmodule Sesopenko.PNGTest do
       assert interlace_method == 0
 
       {
-        idat_length,
+        _idat_length,
         <<"IDAT">>,
         idat_data,
-        idat_crc
+        _idat_crc
       } = idat
 
       z_stream = :zlib.open()
@@ -56,13 +54,13 @@ defmodule Sesopenko.PNGTest do
       :ok = :zlib.inflateEnd(z_stream)
       :ok = :zlib.close(z_stream)
 
-      assert img_data == <<255>>
+      assert img_data == <<0, 255>>
 
       {
-        iend_length,
+        _iend_length,
         <<"IEND">>,
         <<>>,
-        iend_crc
+        _iend_crc
       } = iend
     end
   end

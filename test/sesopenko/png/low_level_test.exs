@@ -146,7 +146,7 @@ defmodule Sesopenko.PNG.LowLevelTest do
           [254]
         ],
         input_config: Sesopenko.PNG.Config.get(1, 1),
-        expected_binary: <<254::size(8)>>
+        expected_binary: <<0, 254::size(8)>>
       },
       %{
         label: "single black pixel",
@@ -154,7 +154,7 @@ defmodule Sesopenko.PNG.LowLevelTest do
           [0]
         ],
         input_config: Sesopenko.PNG.Config.get(1, 1),
-        expected_binary: <<0::size(8)>>
+        expected_binary: <<0, 0::size(8)>>
       },
       %{
         label: "two black pixels, horizontal",
@@ -162,7 +162,7 @@ defmodule Sesopenko.PNG.LowLevelTest do
           [0, 0]
         ],
         input_config: Sesopenko.PNG.Config.get(2, 1),
-        expected_binary: <<0::size(8), 0::size(8)>>
+        expected_binary: <<0, 0::size(8), 0::size(8)>>
       },
       %{
         label: "four white corners",
@@ -173,12 +173,15 @@ defmodule Sesopenko.PNG.LowLevelTest do
         ],
         input_config: Sesopenko.PNG.Config.get(2, 1),
         expected_binary: <<
+          0,
           254::size(8),
           0::size(8),
           254::size(8),
+          0,
           0::size(8),
           0::size(8),
           0::size(8),
+          0,
           254::size(8),
           0::size(8),
           254::size(8)
@@ -224,8 +227,8 @@ defmodule Sesopenko.PNG.LowLevelTest do
       :ok = :zlib.close(z_stream)
 
       # Assert.
-      assert byte_size(binary_deflated) == 1
-      assert binary_deflated == <<255>>
+      assert byte_size(binary_deflated) == 2
+      assert binary_deflated == <<0, 255>>
     end
   end
 

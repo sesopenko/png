@@ -6,6 +6,7 @@ defmodule Sesopenko.PNG.LowLevel do
   @color_type_grayscale 0
   @chunk_length_bit_width 32
   @compression_method_inflate_deflate 0
+  @filter_type_none 0
 
   @header <<137, 80, 78, 71, 13, 10, 26, 10>>
 
@@ -57,12 +58,13 @@ defmodule Sesopenko.PNG.LowLevel do
   end
 
   def idat_content(%Config{} = config, scanlines) when is_list(scanlines) do
+    binary = scanlines_to_binary(config, scanlines)
     # learn about flushing here: http://www.bolet.org/~pornin/deflate-flush.html
     z_stream = :zlib.open()
     :zlib.deflateInit(z_stream, @deflate_compression_level)
     # the stream isn't flushed with the same arity as the input data
     binary =
-      :zlib.deflate(z_stream, scanlines, :finish)
+      :zlib.deflate(z_stream, binary, :finish)
       |> :erlang.iolist_to_binary()
 
     :ok = :zlib.deflateEnd(z_stream)
@@ -84,22 +86,31 @@ defmodule Sesopenko.PNG.LowLevel do
   def scanlines_to_binary(%Config{} = config, scanlines) when is_list(scanlines) do
     # flatten the scanlines into a single binary string
     # scanlines are in the following form
-    binary_string =
-      scanlines
-      |> Stream.concat()
-      |> Stream.map(fn integer_value ->
-        byte_size =
+
+    # cond do
+    #   config.bit_depth == 8 -> 8
+    # end
+
+    # <<integer_value::size(byte_size)>>
+
+    scanlines
+    |> Stream.map(fn scanline ->
+      scanline
+      |> Enum.reduce(<<>>, fn pixel_value, accum ->
+        bit_depth =
           cond do
             config.bit_depth == 8 -> 8
           end
 
-        <<integer_value::size(byte_size)>>
+        accum <> <<pixel_value::size(bit_depth)>>
       end)
-      |> Enum.reduce(<<>>, fn value, accumulator -> accumulator <> value end)
+    end)
+    |> Enum.reduce(<<>>, fn bitline, accum ->
+      accum <> <<@filter_type_none>> <> bitline
+    end)
   end
 
   def explode_chunks(<<@header, rest::binary>>) do
-    IO.puts("stripped header")
     explode_chunks(rest, [])
   end
 
