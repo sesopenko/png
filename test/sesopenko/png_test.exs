@@ -3,14 +3,67 @@ defmodule Sesopenko.PNGTest do
   use ExUnit.Case
   doctest Sesopenko.PNG
 
-  test "reference_image" do
-    red_string =
-      "89504E470D0A1A0A0000000D4948445200000001000000010802000000907753DE0000000E4944415478DA62F8CFC0001060000301010066FD9F240000000049454E44AE426082"
+  @header_byte_size 8
 
-    red_binary = Sesopenko.PNG.reference_image()
+  describe "create" do
+    test "single white pixel greyscale 8 bit image" do
+      # Arrange.
+      input_config = Sesopenko.PNG.Config.get(1, 1)
+      input_scanlines = [[255]]
+      # Act.
+      result = PNG.create(input_config, input_scanlines)
+      [ihdr, idat, iend] = Sesopenko.PNG.LowLevel.explode_chunks(result)
 
-    header = :binary.part(red_binary, {0, 8})
+      # Assert.
+      # Should have an 8 byte header
+      {
+        _,
+        <<"IHDR">>,
+        <<
+          width::unsigned-integer-32,
+          height::unsigned-integer-32,
+          bit_depth,
+          color_type,
+          compression_method,
+          filter_method,
+          interlace_method
+        >>,
+        crc
+      } = ihdr
 
-    assert header == <<137, 80, 78, 71, 13, 10, 26, 10>>
+      assert width == 1
+      assert height == 1
+      assert bit_depth == 8
+      assert color_type == 0
+      assert compression_method == 0
+      assert filter_method == 0
+      assert interlace_method == 0
+
+      {
+        idat_length,
+        <<"IDAT">>,
+        idat_data,
+        idat_crc
+      } = idat
+
+      z_stream = :zlib.open()
+      :zlib.inflateInit(z_stream)
+
+      img_data =
+        :zlib.inflate(z_stream, idat_data)
+        |> :erlang.iolist_to_binary()
+
+      :ok = :zlib.inflateEnd(z_stream)
+      :ok = :zlib.close(z_stream)
+
+      assert img_data == <<255>>
+
+      {
+        iend_length,
+        <<"IEND">>,
+        <<>>,
+        iend_crc
+      } = iend
+    end
   end
 end

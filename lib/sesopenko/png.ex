@@ -1,4 +1,6 @@
 defmodule Sesopenko.PNG do
+  alias Sesopenko.PNG.LowLevel
+
   @moduledoc """
   Documentation for Sesopenko.PNG.
   """
@@ -15,7 +17,10 @@ defmodule Sesopenko.PNG do
     Hexate.decode(red_string)
   end
 
-  def create(_scan_lines) do
-    LowLevel.header()
+  def create(%Sesopenko.PNG.Config{} = config, scan_lines) do
+    LowLevel.header() <>
+      LowLevel.chunk(:ihdr, LowLevel.ihdr_content(config)) <>
+      LowLevel.chunk(:idat, LowLevel.idat_content(config, scan_lines)) <>
+      LowLevel.chunk(:iend)
   end
 end

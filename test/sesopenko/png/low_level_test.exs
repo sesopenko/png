@@ -201,4 +201,76 @@ defmodule Sesopenko.PNG.LowLevelTest do
       end
     end
   end
+
+  describe "idat_content" do
+    test "single pixel white" do
+      # See single_white.png for example PNG guiding this test
+      # Arrange.
+      expected_binary = Hexate.decode("08d763f80f0001010100")
+      expected_checksum = Hexate.decode("1bb6ee56")
+      expected_byte_size = 10
+      input_scanlines = [[255]]
+      input_config = Sesopenko.PNG.Config.get(1, 1)
+
+      # Act.
+      result = LowLevel.idat_content(input_config, input_scanlines)
+      z_stream = :zlib.open()
+      :zlib.inflateInit(z_stream)
+
+      binary_deflated =
+        :zlib.inflate(z_stream, result)
+        |> :erlang.iolist_to_binary()
+
+      :ok = :zlib.inflateEnd(z_stream)
+      :ok = :zlib.close(z_stream)
+
+      # Assert.
+      assert byte_size(binary_deflated) == 1
+      assert binary_deflated == <<255>>
+    end
+  end
+
+  @doc """
+  Should give a list of chunks for a given PNG image (binary)
+  """
+  describe "explode_chunks" do
+    test "explode reference" do
+      # Arrange.
+      input_image = Sesopenko.PNG.reference_image()
+      # Act.
+      [ihdr, idata, iend] = LowLevel.explode_chunks(input_image)
+      {ihdr_length, ihdr_type, ihdr_data, ihdr_crc} = ihdr
+      # Assert
+
+      assert ihdr_length == 13
+      assert ihdr_type == <<"IHDR">>
+
+      <<
+        width::unsigned-integer-32,
+        height::unsigned-integer-32,
+        bit_depth,
+        color_type,
+        compression_method,
+        filter_method,
+        interlace_method
+      >> = ihdr_data
+
+      assert width == 1
+      assert height == 1
+      assert bit_depth == 8
+      assert color_type == 2
+      assert compression_method == 0
+      assert filter_method == 0
+      assert interlace_method == 0
+
+      {idat_length, idat_type, idat_data, idat_crc} = idata
+
+      assert idat_length == 14
+      assert idat_type == <<"IDAT">>
+      {iend_length, iend_type, iend_dat, iend_crc} = iend
+      assert iend_length == 0
+      assert iend_type == <<"IEND">>
+      assert iend_dat == <<>>
+    end
+  end
 end

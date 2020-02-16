@@ -7,8 +7,16 @@ defmodule Sesopenko.PNG.LowLevel do
   @chunk_length_bit_width 32
   @compression_method_inflate_deflate 0
 
+  @header <<137, 80, 78, 71, 13, 10, 26, 10>>
+
+  @deflate_compression_level 9
+
   def header() do
-    <<137, 80, 78, 71, 13, 10, 26, 10>>
+    @header
+  end
+
+  def chunk(:iend) do
+    chunk(:iend, <<>>)
   end
 
   @doc """
@@ -49,14 +57,16 @@ defmodule Sesopenko.PNG.LowLevel do
   end
 
   def idat_content(%Config{} = config, scanlines) when is_list(scanlines) do
+    # learn about flushing here: http://www.bolet.org/~pornin/deflate-flush.html
     bytes = scanlines_to_binary(config, scanlines)
     z_stream = :zlib.open()
-    :zlib.deflateInit(z_stream)
+    :zlib.deflateInit(z_stream, @deflate_compression_level)
     # the stream isn't flushed with the same arity as the input data
     binary =
       :zlib.deflate(z_stream, scanlines, :finish)
       |> :erlang.iolist_to_binary()
 
+    :ok = :zlib.deflateEnd(z_stream)
     :ok = :zlib.close(z_stream)
     binary
   end
@@ -87,5 +97,30 @@ defmodule Sesopenko.PNG.LowLevel do
         <<integer_value::size(byte_size)>>
       end)
       |> Enum.reduce(<<>>, fn value, accumulator -> accumulator <> value end)
+  end
+
+  def explode_chunks(<<@header, rest::binary>>) do
+    IO.puts("stripped header")
+    explode_chunks(rest, [])
+  end
+
+  def explode_chunks(
+        <<
+          chunk_size::unsigned-integer-32,
+          chunk_type::binary-size(4),
+          chunk::binary-size(chunk_size),
+          crc::unsigned-integer-32,
+          rest::binary
+        >>,
+        accum
+      ) do
+    explode_chunks(rest, accum ++ [{chunk_size, chunk_type, chunk, crc}])
+  end
+
+  def explode_chunks(
+        <<>>,
+        accum
+      ) do
+    accum
   end
 end
