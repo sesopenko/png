@@ -4,7 +4,7 @@ defmodule Sesopenko.PNG.MixProject do
   def project do
     [
       app: :sesopenko_png,
-      version: "1.0.1",
+      version: "1.0.3",
       description: description(),
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
@@ -38,7 +38,8 @@ defmodule Sesopenko.PNG.MixProject do
   defp deps do
     [
       # used for converting wikipedia example png to byte string.
-      {:hexate, ">= 0.6.0"}
+      {:hexate, ">= 0.6.0"},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
 end

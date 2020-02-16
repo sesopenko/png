@@ -1,4 +1,5 @@
 defmodule Sesopenko.PNG.LowLevel do
+  @moduledoc false
   alias Sesopenko.PNG.Config
   @dimension_bit_width 32
   @small_property_bit_width 8
