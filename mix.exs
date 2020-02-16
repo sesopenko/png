@@ -4,7 +4,7 @@ defmodule Sesopenko.PNG.MixProject do
   def project do
     [
       app: :sesopenko_png,
-      version: "1.0.3",
+      version: "1.0.4",
       description: description(),
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
