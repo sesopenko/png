@@ -19,7 +19,7 @@ defmodule Sesopenko.PNG.MixProject do
 
   defp package() do
     [
-      name: "Sesopenko.PNG",
+      name: "sesopenko_png",
       files: ~w(lib .formatter.exs mix.exs README* LICENSE*),
       licenses: ["GNU-GPLv3"],
       links: %{"GitHub" => "https://github.com/sesopenko/png"},

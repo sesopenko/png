@@ -25,7 +25,7 @@ by adding `sesopenko` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:sesopenko_png, "~> 1.0.3"}
+    {:sesopenko_png, "~> 1.0.4"}
   ]
 end
 ```
