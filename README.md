@@ -1,6 +1,21 @@
 # Sesopenko.PNG
 
-Runtime PNG compression library.
+Runtime PNG compression library.  Creates 8 bit grayscale PNG binaries from scanline lists.
+
+## Example Usage
+
+```elixir
+config = Sesopenko.PNG.Config.get(3, 3)
+
+image_with_white_corners = [
+  [254, 0, 254],
+  [0, 0, 0],
+  [254, 0, 254]
+]
+
+binary_data = Sesopenko.PNG.create(config, image_with_white_corners)
+
+```
 
 ## Installation
 
@@ -15,9 +30,9 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/sesopenko](https://hexdocs.pm/sesopenko).
+## Capabilities
+
+* 8 bit grayscale
 
 ## References:
 

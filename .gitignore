@@ -28,3 +28,5 @@ sesopenko-*.tar
 
 # elixir CLI stuff
 .elixir_ls
+
+*.png

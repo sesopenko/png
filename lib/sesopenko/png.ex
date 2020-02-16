@@ -17,6 +17,9 @@ defmodule Sesopenko.PNG do
     Hexate.decode(red_string)
   end
 
+  @doc """
+  Creates a PNG for a given config and scan_lines
+  """
   def create(%Sesopenko.PNG.Config{} = config, scan_lines) do
     LowLevel.header() <>
       LowLevel.chunk(:ihdr, LowLevel.ihdr_content(config)) <>
